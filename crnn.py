@@ -1,11 +1,6 @@
-# pylint:skip-file
-import mxnet as mx
-import numpy as np
 from collections import namedtuple
-import time
-import math
 
-from mxnet.rnn import BidirectionalCell, LSTMCell
+import mxnet as mx
 
 LSTMState = namedtuple("LSTMState", ["c", "h"])
 LSTMParam = namedtuple("LSTMParam", ["i2h_weight", "i2h_bias",
@@ -70,7 +65,7 @@ def crnn(num_lstm_layer, batch_size,seq_len,num_hidden, num_classes,num_label, d
                                       num_filter=layer_size[i])
         if bn:
             layer = mx.symbol.BatchNorm(data=layer, name='batchnorm-%d' % i)
-        layer = mx.symbol.Activation(data=layer, act_type='relu', name='relu-%d' % i)
+        layer = mx.symbol.LeakyReLU(data=layer, act_type='leaky', name='leaky-%d' % i)
         return layer
 
     net = convRelu(0, data)
@@ -89,12 +84,13 @@ def crnn(num_lstm_layer, batch_size,seq_len,num_hidden, num_classes,num_label, d
 
     net = mx.symbol.reshape(data=net,shape=(batch_size,seq_len,-1))
     slices_net = mx.symbol.split(data=net,axis=1,num_outputs=seq_len,squeeze_axis=1)
-
+    # this block only use for parameter display
+    # ############################
     init_c = [('l%d_init_c' % l, (batch_size, num_hidden)) for l in range(num_lstm_layer * 2)]
     init_h = [('l%d_init_h' % l, (batch_size, num_hidden)) for l in range(num_lstm_layer * 2)]
     init_states = init_c + init_h
     init_values = {x[0]: x[1] for x in init_states}
-
+    # ############################
     forward_hidden = []
     for seqidx in range(seq_len):
         hidden = slices_net[seqidx]
@@ -130,8 +126,8 @@ def crnn(num_lstm_layer, batch_size,seq_len,num_hidden, num_classes,num_label, d
     label = mx.sym.Reshape(data=label, shape=(-1,))
     label = mx.sym.Cast(data=label, dtype='int32')
     sm = mx.sym.WarpCTC(data=pred, label=label, label_length=num_label, input_length=seq_len)
-    # sm = mx.sym.reshape(data=sm,shape=(-1,seq_len,num_classes))
-
+    # you can observer the parameter of network in this way.
+    # mx.viz is not recommend for network which contains complex lstm
     # arg_shape, output_shape, aux_shape = sm.infer_shape(**dict(init_values, **{"data": (batch_size, 1, 32, 200),"label":(batch_size,seq_len)}))
     # print(output_shape)
 

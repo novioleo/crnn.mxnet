@@ -8,7 +8,7 @@ import mxnet as mx
 import numpy as np
 from PIL import Image
 
-from crnn2 import crnn
+from crnn import crnn
 
 
 class SimpleBatch(object):
