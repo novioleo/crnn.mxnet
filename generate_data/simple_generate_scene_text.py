@@ -9,8 +9,15 @@ import argparse
 from multiprocessing import Pool
 
 
-def write_one(background, pic_width, pic_height, to_print_text, fonts, pic_dir, shape, m_count):
+def write_one(pic_width, pic_height, to_print_text, fonts, pic_dir, shape, m_count):
     to_return = []
+    # pick a background pic from gallery randomly
+    random_background_num = random.randint(0, background_length - 1)
+    # rotate the image
+    # random_background_rotate_degree = random.randint(0,360)
+    background = Image \
+        .open(os.path.join(gallery_dir, backgrounds[random_background_num])) \
+        # .rotate(random_background_rotate_degree,expand=1)
     for i in range(len(fonts)):
         try:
             m_font = ImageFont.truetype(os.path.join(font_dir, fonts[i]), FONT_SIZE)
@@ -35,6 +42,7 @@ def write_one(background, pic_width, pic_height, to_print_text, fonts, pic_dir, 
             to_return.append('%s\t%s\n' % (os.path.abspath(file_name), to_print_text))
         except Exception as e:
             print(e)
+    background.close()
     return to_return
 
 
@@ -58,15 +66,10 @@ def write(count: int, mode: str, min_len: int, max_len: int, shape: tuple,worker
     for m_count in range(count):
         to_print = [text[random.randint(0, text_len - 1)] for __ in range(random.randint(min_len, max_len))]
         to_print_text = ''.join(to_print)
-        # pick a background pic from gallery randomly
-        random_background_num = random.randint(0, background_length - 1)
-        # rotate the image
-        # random_background_rotate_degree = random.randint(0,360)
-        background = Image.open(os.path.join(gallery_dir, backgrounds[
-            random_background_num]))  # .rotate(random_background_rotate_degree,expand=1)
+
         pic_width = len(to_print) * FONT_SIZE + BORDER_SIZE * 2
         pic_height = FONT_SIZE + BORDER_SIZE * 2
-        pool.apply_async(write_one,(background, pic_width, pic_height, to_print_text, fonts, pic_dir, shape, m_count),callback=write2file_callback)
+        pool.apply_async(write_one,(pic_width, pic_height, to_print_text, fonts, pic_dir, shape, m_count),callback=write2file_callback)
     pool.close()
     pool.join()
     print('finish')
