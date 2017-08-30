@@ -82,8 +82,8 @@ def crnn(num_lstm_layer, batch_size,seq_len,num_hidden, num_classes,num_label, d
     if dropout > 0:
         net = mx.symbol.Dropout(data=net, p=dropout)
 
-    net = mx.symbol.reshape(data=net,shape=(batch_size,seq_len,-1))
-    slices_net = mx.symbol.split(data=net,axis=1,num_outputs=seq_len,squeeze_axis=1)
+    net = mx.symbol.flatten(data=net)
+    slices_net = mx.symbol.split(data=net,axis=1,num_outputs=seq_len)
     # this block only use for parameter display
     # ############################
     init_c = [('l%d_init_c' % l, (batch_size, num_hidden)) for l in range(num_lstm_layer * 2)]
@@ -135,5 +135,6 @@ def crnn(num_lstm_layer, batch_size,seq_len,num_hidden, num_classes,num_label, d
 
 
 # if __name__ == '__main__':
-#     model = crnn(2,8,17,256,3820,17,0.7)
+#     model = crnn(2,8,17,256,3820,9,0.3)
+#     model.save('./model/digit_crnn-symbol.json')
 
