@@ -9,6 +9,10 @@ import argparse
 from multiprocessing import Pool
 
 
+def process_str(x):
+    return ''.join([char + ' ' if char.isnumeric() else char for char in x])
+
+
 def write_one(pic_width, pic_height, to_print_text, fonts, pic_dir, shape, m_count):
     to_return = []
     # pick a background pic from gallery randomly
@@ -28,7 +32,7 @@ def write_one(pic_width, pic_height, to_print_text, fonts, pic_dir, shape, m_cou
             scene_text = Image.new('RGBA', (pic_width, pic_height))
             draw = ImageDraw.Draw(scene_text)
             random_RGB = (random.randint(0, 1) * 255, random.randint(0, 1) * 255, random.randint(0, 1) * 255)
-            draw.text((10, 10), to_print_text, fill=random_RGB, font=m_font)
+            draw.text((BORDER_SIZE, BORDER_SIZE), process_str(to_print_text), fill=random_RGB, font=m_font)
             # text rotate degree
             random_text_rotate_degree = random.randint(-TEXT_ROTATE_DEGREE, TEXT_ROTATE_DEGREE)
             random_text_rotate_degree = random_text_rotate_degree if random_text_rotate_degree > 0 else 360 + random_text_rotate_degree
@@ -52,7 +56,7 @@ def write2file_callback(lines):
         to_write.flush()
 
 
-def write(count: int, mode: str, min_len: int, max_len: int, shape: tuple,worker_num:int):
+def write(count: int, mode: str, min_len: int, max_len: int, shape: tuple, worker_num: int):
     if not os.path.exists(data_dir):
         os.mkdir(data_dir)
     pic_dir = os.path.join(data_dir, mode)
@@ -69,11 +73,11 @@ def write(count: int, mode: str, min_len: int, max_len: int, shape: tuple,worker
 
         pic_width = len(to_print) * FONT_SIZE + BORDER_SIZE * 2
         pic_height = FONT_SIZE + BORDER_SIZE * 2
-        pool.apply_async(write_one,(pic_width, pic_height, to_print_text, fonts, pic_dir, shape, m_count),callback=write2file_callback)
+        pool.apply_async(write_one, (pic_width, pic_height, to_print_text, fonts, pic_dir, shape, m_count),
+                         callback=write2file_callback)
     pool.close()
     pool.join()
     print('finish')
-
 
 
 if __name__ == '__main__':
@@ -92,8 +96,9 @@ if __name__ == '__main__':
     parser.add_argument('--width', default=200, type=int, help='the width of the generated images')
     parser.add_argument('--height', default=32, type=int, help='the height of the generated images')
     parser.add_argument('--shuffle', action='store_true', help='shuffle the csv')
-    parser.add_argument('--shuffle_count', default=10000,type=int, help='shuffle the csv')
-    parser.add_argument('--worker', default=7, type=int, help='use multiprocess to speed up image generate(num of CPU cores minus 1 is RECOMMEND)')
+    parser.add_argument('--shuffle_count', default=10000, type=int, help='shuffle the csv')
+    parser.add_argument('--worker', default=7, type=int,
+                        help='use multiprocess to speed up image generate(num of CPU cores minus 1 is RECOMMEND)')
     opt = parser.parse_args()
     print(opt)
 
@@ -113,14 +118,14 @@ if __name__ == '__main__':
     text_len = len(text)
     background_length = len(backgrounds)
 
-    write(opt.num, opt.name, opt.min_len, opt.max_len, (opt.width, opt.height),opt.worker)
+    write(opt.num, opt.name, opt.min_len, opt.max_len, (opt.width, opt.height), opt.worker)
     """
     Because of the traditional shuffle the dataset method is loading all data into memory,
     then run random.shuffle.when the dataset is too large,the memory of poor machine will leak.
     And this part will make the imageIterator much more convenient to load data.
     """
     if opt.shuffle:
-        with open(label_file_path[:-4]+'_tmp.csv','w') as to_write,open(label_file_path) as to_read:
+        with open(label_file_path[:-4] + '_tmp.csv', 'w') as to_write, open(label_file_path) as to_read:
             to_shuffle_list = []
             cnt = 0
             for m_line in to_read:
@@ -136,4 +141,4 @@ if __name__ == '__main__':
                 to_write.writelines(to_shuffle_list)
                 to_shuffle_list.clear()
         os.remove(label_file_path)
-        os.rename(label_file_path[:-4]+'_tmp.csv',label_file_path)
+        os.rename(label_file_path[:-4] + '_tmp.csv', label_file_path)
