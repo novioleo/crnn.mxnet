@@ -90,7 +90,6 @@ if __name__ == '__main__':
     parser.add_argument('--height', default=32, type=int, help='the height of the generated images')
     parser.add_argument('--shuffle', action='store_true', help='shuffle the csv')
     parser.add_argument('--shuffle_count', default=10000,type=int, help='shuffle the csv')
-    parser.add_argument('--shuffle_iterations', default=3,type=int, help='shuffle the csv')
     parser.add_argument('--worker', default=7, type=int, help='use multiprocess to speed up image generate(num of CPU cores minus 1 is RECOMMEND)')
     opt = parser.parse_args()
     print(opt)
@@ -102,7 +101,6 @@ if __name__ == '__main__':
     BORDER_SIZE = opt.border_size
     TEXT_ROTATE_DEGREE = opt.trd
     shuffle_count = opt.shuffle_count
-    shuffle_iterations = opt.shuffle_iterations
 
     fonts = [_ for _ in os.listdir(font_dir)]
     backgrounds = [_ for _ in os.listdir(gallery_dir)]
@@ -119,22 +117,20 @@ if __name__ == '__main__':
     And this part will make the imageIterator much more convenient to load data.
     """
     if opt.shuffle:
-        while shuffle_iterations > 0:
-            with open(label_file_path[:-4]+'_tmp.csv','w') as to_write,open(label_file_path) as to_read:
-                to_shuffle_list = []
-                cnt = 0
-                for m_line in to_read:
-                    to_shuffle_list.append(m_line)
-                    cnt += 1
-                    if cnt % shuffle_count == 0:
-                        random.shuffle(to_shuffle_list)
-                        to_write.writelines(to_shuffle_list)
-                        to_shuffle_list.clear()
-                        to_write.flush()
-                if len(to_shuffle_list) > 0:
+        with open(label_file_path[:-4]+'_tmp.csv','w') as to_write,open(label_file_path) as to_read:
+            to_shuffle_list = []
+            cnt = 0
+            for m_line in to_read:
+                to_shuffle_list.append(m_line)
+                cnt += 1
+                if cnt % shuffle_count == 0:
                     random.shuffle(to_shuffle_list)
                     to_write.writelines(to_shuffle_list)
                     to_shuffle_list.clear()
-            os.remove(label_file_path)
-            os.rename(label_file_path[:-4]+'_tmp.csv',label_file_path)
-            shuffle_iterations -= 1
+                    to_write.flush()
+            if len(to_shuffle_list) > 0:
+                random.shuffle(to_shuffle_list)
+                to_write.writelines(to_shuffle_list)
+                to_shuffle_list.clear()
+        os.remove(label_file_path)
+        os.rename(label_file_path[:-4]+'_tmp.csv',label_file_path)
