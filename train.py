@@ -134,6 +134,7 @@ if __name__ == '__main__':
     parser.add_argument('--num_lstm',type=int,default=2,help='num of lstm layers')
     parser.add_argument('--gpu',action='store_true',help='enable train with gpu(0)')
     parser.add_argument('--from_epoch',type=int,help='continue train from specific epoch file')
+    parser.add_argument('--learning_rate',type=float,help='the learning rate of adam')
     opt = parser.parse_args()
     model_name = opt.name
     log_file_name = model_name+'.log'
@@ -207,7 +208,7 @@ if __name__ == '__main__':
         batch_end_callback=mx.callback.Speedometer(BATCH_SIZE, 100),
         epoch_end_callback=mx.callback.do_checkpoint(prefix, 1),
         optimizer='adam',
-        optimizer_params={'learning_rate': 0.001},
+        optimizer_params={'learning_rate': opt.learning_rate},
         initializer=mx.init.Xavier(factor_type="in", magnitude=2.34),
         num_epoch=100,
         begin_epoch=opt.from_epoch if opt.from_epoch else 0

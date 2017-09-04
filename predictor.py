@@ -45,7 +45,7 @@ class OCRIter(mx.io.DataIter):
         label = []
 
         for img in self.images:
-            img = Image.fromarray(img).convert('L').resize(self.data_shape)
+            img = Image.fromarray(img).convert('L').resize(self.data_shape,Image.BILINEAR)
             img = np.array(img).reshape((1, self.data_shape[1], self.data_shape[0]))
             data.append(img)
             ret = np.zeros(self.num_label, int)
@@ -62,7 +62,7 @@ class OCRIter(mx.io.DataIter):
 
 
 class predict():
-    def __init__(self, images, data_shape, model_name, from_epoch, charset,seq_len,num_hidden, enable_gpu=False):
+    def __init__(self, images, data_shape, model_name, from_epoch, charset,seq_len,num_label,num_hidden, enable_gpu=False):
         self.module = mx.mod.Module.load(
             model_name,
             from_epoch,
@@ -83,7 +83,7 @@ class predict():
         init_c = [('l%d_init_c' % l, (self.BATCH_SIZE, num_hidden)) for l in range(num_lstm_layer * 2)]
         init_h = [('l%d_init_h' % l, (self.BATCH_SIZE, num_hidden)) for l in range(num_lstm_layer * 2)]
         init_states = init_c + init_h
-        self.to_predict = OCRIter(self.BATCH_SIZE, len(charset) + 1, data_shape, 9, init_states, images)
+        self.to_predict = OCRIter(self.BATCH_SIZE, len(charset) + 1, data_shape, num_label, init_states, images)
         self.module.bind(self.to_predict.provide_data, self.to_predict.provide_label, for_training=False)
 
     def __get_string(self, label_list):
@@ -125,12 +125,18 @@ class predict():
         return to_return
 
 if __name__ == '__main__':
-    files = ['/home/novio/projects/data/digit_val/103_经典超圆简.jpg',]
+    files = [
+        '1.png',
+        '2.png',
+        '3.png',
+        '4.png',
+    ]
     import cv2
     images = [cv2.imread(x) for x in files]
-    my_predictor = predict(images,(200,32),'model/digit_crnn',4,'./digit.txt',17,256,True)
+    my_predictor = predict(images,(200,32),'model/digit_crnn',14,'./digit.txt',51,25,256,False)
     result = my_predictor.run()
     for m_image,predict_label in result:
-        cv2.imshow(predict_label,m_image)
-    cv2.waitKey(0)
+        cv2.imshow('result',m_image)
+        print(predict_label)
+        cv2.waitKey(0)
     cv2.destroyAllWindows()
