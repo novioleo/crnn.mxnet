@@ -81,7 +81,8 @@ def crnn(num_lstm_layer, batch_size,seq_len,num_hidden, num_classes,num_label, d
     net = convRelu(6, net, True)
     if dropout > 0:
         net = mx.symbol.Dropout(data=net, p=dropout)
-
+    # I hope nobody notice this error~LOL
+    net = mx.sym.transpose(data=net,axes=(0,3,1,2))
     net = mx.symbol.flatten(data=net)
     slices_net = mx.symbol.split(data=net,axis=1,num_outputs=seq_len)
     # this block only use for parameter display
