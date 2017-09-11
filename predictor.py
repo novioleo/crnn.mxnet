@@ -109,31 +109,25 @@ class predict():
 
     def run(self):
         prob = self.module.predict(self.to_predict).asnumpy()
-        all_result = [['', ] * self.seq_len for _ in range(self.BATCH_SIZE)]
+        label_list = [['' for _ in range(self.seq_len)] for i in range(self.seq_len)]
         for i in range(self.seq_len):
             for j in range(self.BATCH_SIZE):
-                label_list = []
                 max_index = np.argsort(prob[i * self.BATCH_SIZE + j])[::-1][0]
-                label_list.append(max_index)
-                result = self.__get_string(label_list)
-                all_result[j][i] = result
+                label_list[j][i] = max_index
+        result = []
+        for i in range(self.BATCH_SIZE):
+            result.append(self.__get_string(label_list[i]))
         to_return = []
         for i in range(self.BATCH_SIZE):
-            to_return.append(
-                [np.array(Image.fromarray(self.img[i]).convert('L').resize(self.data_shape, Image.BILINEAR)),
-                 ''.join(all_result[i])])
+            to_return.append([np.array(Image.fromarray(self.img[i]).convert('L').resize(self.data_shape, Image.BILINEAR)),result[i]])
         return to_return
 
 if __name__ == '__main__':
     files = [
-        '1.png',
-        '2.png',
-        '3.png',
-        '4.png',
     ]
     import cv2
     images = [cv2.imread(x) for x in files]
-    my_predictor = predict(images,(200,32),'model/digit_crnn',14,'./digit.txt',51,25,256,False)
+    my_predictor = predict(images,(256,32),'model/digit2',8,'./digit.txt',32,24,256,False)
     result = my_predictor.run()
     for m_image,predict_label in result:
         cv2.imshow('result',m_image)
