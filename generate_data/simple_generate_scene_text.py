@@ -15,7 +15,7 @@ def process_str(x):
 
 
 def write_one(pic_height, to_print_text, fonts, pic_dir, shape, m_count):
-    alpha_numeric_number_counter = sum(map(lambda x: 1 if x.isalnum() else 0,to_print_text))
+    alpha_numeric_number_counter = sum(map(lambda x: 1 if x.encode('utf-8').isalnum() else 0,to_print_text))
     pic_width = len(to_print_text) * FONT_SIZE + BORDER_SIZE * 2 - int(alpha_numeric_number_counter * 0.5*FONT_SIZE)
     to_return = []
     # pick a background pic from gallery randomly
