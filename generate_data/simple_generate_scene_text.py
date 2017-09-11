@@ -1,5 +1,6 @@
 # You can save all generated images in a single h5py file.
 # I just want to have a look with my generated pics directly.
+from functools import reduce
 
 from PIL import Image, ImageDraw, ImageFont
 import random
@@ -13,7 +14,9 @@ def process_str(x):
     return ''.join([char + ' ' if char.isnumeric() else char for char in x])
 
 
-def write_one(pic_width, pic_height, to_print_text, fonts, pic_dir, shape, m_count):
+def write_one(pic_height, to_print_text, fonts, pic_dir, shape, m_count):
+    alpha_numeric_number_counter = sum(map(lambda x: 1 if x.isalnum() else 0,to_print_text))
+    pic_width = len(to_print_text) * FONT_SIZE + BORDER_SIZE * 2 - int(alpha_numeric_number_counter * 0.5*FONT_SIZE)
     to_return = []
     # pick a background pic from gallery randomly
     random_background_num = random.randint(0, background_length - 1)
@@ -31,10 +34,10 @@ def write_one(pic_width, pic_height, to_print_text, fonts, pic_dir, shape, m_cou
             # draw text and rotate it
             scene_text = Image.new('RGBA', (pic_width, pic_height))
             draw = ImageDraw.Draw(scene_text)
-            random_RGB = (random.randint(0, 1) * 255, random.randint(0, 1) * 255, random.randint(0, 1) * 255)
-            draw.text((BORDER_SIZE, BORDER_SIZE), process_str(to_print_text), fill=random_RGB, font=m_font)
+            random_RGB = (255,255,255) if random.randint(0, 1) == 1 else (0,0,0)
+            draw.text((BORDER_SIZE, BORDER_SIZE), to_print_text, fill=random_RGB, font=m_font)
             # text rotate degree
-            random_text_rotate_degree = random.randint(-TEXT_ROTATE_DEGREE, TEXT_ROTATE_DEGREE)
+            random_text_rotate_degree = random.uniform(-TEXT_ROTATE_DEGREE, TEXT_ROTATE_DEGREE)
             random_text_rotate_degree = random_text_rotate_degree if random_text_rotate_degree > 0 else 360 + random_text_rotate_degree
             w = scene_text.rotate(random_text_rotate_degree, expand=1)
             img = background.crop((random_left, random_top, random_left + pic_width, random_top + pic_height))
@@ -71,9 +74,9 @@ def write(count: int, mode: str, min_len: int, max_len: int, shape: tuple, worke
         to_print = [text[random.randint(0, text_len - 1)] for __ in range(random.randint(min_len, max_len))]
         to_print_text = ''.join(to_print)
 
-        pic_width = len(to_print) * FONT_SIZE + BORDER_SIZE * 2
+
         pic_height = FONT_SIZE + BORDER_SIZE * 2
-        pool.apply_async(write_one, (pic_width, pic_height, to_print_text, fonts, pic_dir, shape, m_count),
+        pool.apply_async(write_one, ( pic_height, to_print_text, fonts, pic_dir, shape, m_count),
                          callback=write2file_callback)
     pool.close()
     pool.join()
