@@ -13,6 +13,8 @@ REQUIREMENTS:
 > **WARNING**
 > - DON'T USE MXNET WITH OPENCV,IT WILL BE WRONG!
 
+HOW TO RUN
+> python predictor.py
 
 
 I just implement [CRNN](https://github.com/bgshih/crnn) with mxnet and there are some difference.
