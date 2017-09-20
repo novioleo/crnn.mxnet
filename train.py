@@ -8,7 +8,7 @@ import mxnet as mx
 import numpy as np
 from PIL import Image
 
-from crnn import crnn
+from crnn2 import crnn
 
 
 class SimpleBatch(object):
@@ -51,7 +51,7 @@ class OCRIter(mx.io.DataIter):
         for m_line in self.dataset_lst_file:
             img_path,img_label = m_line.strip().split('\t')
             cnt += 1
-            img = Image.open(img_path).convert('L').resize(self.data_shape)
+            img = Image.open(img_path).resize(self.data_shape,Image.BILINEAR).convert('L')
             img = np.array(img).reshape((1, data_shape[1], data_shape[0]))
             data.append(img)
             plate_str = img_label
@@ -210,7 +210,7 @@ if __name__ == '__main__':
         optimizer='adam',
         optimizer_params={'learning_rate': opt.learning_rate},
         initializer=mx.init.Xavier(factor_type="in", magnitude=2.34),
-        num_epoch=100,
+        num_epoch=200,
         begin_epoch=opt.from_epoch if opt.from_epoch else 0
     )
     model.save_params(model_name)

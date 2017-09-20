@@ -24,7 +24,7 @@ def lstm(num_hidden, indata, prev_state, param, seqidx, layeridx):
                                 num_hidden=num_hidden * 4,
                                 name="t%d_l%d_h2h" % (seqidx, layeridx))
     gates = i2h + h2h
-    slice_gates = mx.sym.SliceChannel(gates, num_outputs=4,
+    slice_gates = mx.sym.split(gates, num_outputs=4,
                                       name="t%d_l%d_slice" % (seqidx, layeridx))
     in_gate = mx.sym.Activation(slice_gates[0], act_type="sigmoid")
     in_transform = mx.sym.Activation(slice_gates[1], act_type="tanh")
@@ -58,37 +58,39 @@ def crnn(num_lstm_layer, batch_size,seq_len,num_hidden, num_classes,num_label, d
 
     kernel_size = [(3, 3), (3, 3), (3, 3), (3, 3), (3, 3), (3, 3)]
     padding_size = [(1, 1), (1, 1), (1, 1), (1, 1), (1, 1), (1, 1)]
-    layer_size = [32, 32, 32, 32, 32, 32]
+    layer_size = [72]*6
 
     def convRelu(i, input_data, bn=False):
         layer = mx.symbol.Convolution(name='conv-%d' % i, data=input_data, kernel=kernel_size[i], pad=padding_size[i],
                                       num_filter=layer_size[i])
         if bn:
-            layer = mx.symbol.BatchNorm(data=layer, name='batchnorm-%d' % i)
-        layer = mx.symbol.LeakyReLU(data=layer, act_type='leaky', name='leaky-%d' % i)
+            layer = mx.sym.BatchNorm(data=layer, name='batchnorm-%d' % i)
+        layer = mx.sym.LeakyReLU(data=layer,name='leakyrelu-%d' % i)
         return layer
 
     net = convRelu(0, data)
-    max = mx.symbol.Pooling(data=net, name='pool-0_m', pool_type='max', kernel=(2, 2), stride=(2, 2))
-    avg = mx.symbol.Pooling(data=net, name='pool-0_a', pool_type='avg', kernel=(2, 2), stride=(2, 2))
+    max = mx.sym.Pooling(data=net, name='pool-0_m', pool_type='max', kernel=(2, 2), stride=(2, 2))
+    avg = mx.sym.Pooling(data=net, name='pool-0_a', pool_type='avg', kernel=(2, 2), stride=(2, 2))
     net = max - avg
     net = convRelu(1, net)
-    net = mx.symbol.Pooling(data=net, name='pool-1', pool_type='max', kernel=(2, 2), stride=(2, 2))
+    net = mx.sym.Pooling(data=net, name='pool-1', pool_type='max', kernel=(2, 2), stride=(2, 2))
     net = convRelu(2, net, True)
     net = convRelu(3, net)
-    net = mx.symbol.Pooling(data=net, name='pool-2', pool_type='max', kernel=(2, 2), stride=(2, 2))
+    net = mx.sym.Pooling(data=net, name='pool-2', pool_type='max', kernel=(2, 2), stride=(2, 2))
     net = convRelu(4, net, True)
     net = convRelu(5, net)
+    # arg_shape, output_shape, aux_shape = net.infer_shape( **{"data": (8, 3, 32, 256)})
+    # print(output_shape)
     if dropout > 0:
         net = mx.symbol.Dropout(data=net, p=dropout)
 
-    slices_net = mx.symbol.split(data=net,axis=3,num_outputs=seq_len,squeeze_axis=1)
+    slices_net = mx.sym.split(data=net,axis=3,num_outputs=seq_len,squeeze_axis=1)
     # this block only use for parameter display
     # ############################
-    init_c = [('l%d_init_c' % l, (batch_size, num_hidden)) for l in range(num_lstm_layer * 2)]
-    init_h = [('l%d_init_h' % l, (batch_size, num_hidden)) for l in range(num_lstm_layer * 2)]
-    init_states = init_c + init_h
-    init_values = {x[0]: x[1] for x in init_states}
+    # init_c = [('l%d_init_c' % l, (batch_size, num_hidden)) for l in range(num_lstm_layer * 2)]
+    # init_h = [('l%d_init_h' % l, (batch_size, num_hidden)) for l in range(num_lstm_layer * 2)]
+    # init_states = init_c + init_h
+    # init_values = {x[0]: x[1] for x in init_states}
     # ############################
     forward_hidden = []
     for seqidx in range(seq_len):
@@ -117,23 +119,26 @@ def crnn(num_lstm_layer, batch_size,seq_len,num_hidden, num_classes,num_label, d
 
     hidden_all = []
     for i in range(seq_len):
-        hidden_all.append(mx.sym.Concat(*[forward_hidden[i], backward_hidden[i]], dim=1))
 
-    hidden_concat = mx.sym.Concat(*hidden_all, dim=0)
+        hidden_all.append(mx.sym.concat(*[forward_hidden[i], backward_hidden[i]], dim=1))
+
+    hidden_concat = mx.sym.concat(*hidden_all, dim=0)
+
+
     pred = mx.sym.FullyConnected(data=hidden_concat, num_hidden=num_classes)
-
+    # arg_shape, output_shape, aux_shape = pred.infer_shape(
+    #     **dict(init_values, **{"data": (batch_size, 1, 32, 256)}))
+    # print(output_shape)
     label = mx.sym.Reshape(data=label, shape=(-1,))
     label = mx.sym.Cast(data=label, dtype='int32')
     sm = mx.sym.WarpCTC(data=pred, label=label, label_length=num_label, input_length=seq_len)
     # you can observer the parameter of network in this way.
     # mx.viz is not recommend for network which contains complex lstm
-    # arg_shape, output_shape, aux_shape = sm.infer_shape(**dict(init_values, **{"data": (batch_size, 1, 32, 256),"label":(batch_size,num_label)}))
+    # arg_shape, output_shape, aux_shape = sm.infer_shape(**dict(init_values, **{"data": (batch_size, 8, 32, 256),"label":(batch_size,num_label)}))
     # print(output_shape)
-
+    # mx.viz.print_summary(sm,shape=dict(init_values, **{"data": (batch_size, 8, 32, 256),"label":(batch_size,num_label)}))
     return sm
 
 
 # if __name__ == '__main__':
-#     model = crnn(2,8,32,256,3820,24,0.3)
-#     model.save('./model/digit_crnn-symbol.json')
-
+#     model = crnn(2,10,32,200,3820,24,0.3)
