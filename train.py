@@ -49,7 +49,7 @@ class OCRIter(mx.io.DataIter):
         label = []
         cnt = 0
         for m_line in self.dataset_lst_file:
-            img_path,img_label = m_line.strip().split('\t')
+            img_path,img_label = m_line.strip().split(',')
             cnt += 1
             img = Image.open(img_path).resize(self.data_shape,Image.BILINEAR).convert('L')
             img = np.array(img).reshape((1, data_shape[1], data_shape[0]))
@@ -124,7 +124,7 @@ if __name__ == '__main__':
     parser.add_argument('--name',required=True,help='the model name')
     parser.add_argument('--charset',required=True,help='the charset file')
     parser.add_argument('--train_lst',required=True,help='the csv which contains all train list')
-    parser.add_argument('--val_lst',required=True,help='the csv which contains all val list')
+    parser.add_argument('--val_lst',help='the csv which contains all val list')
     parser.add_argument('--batch_size',type=int,default=64,help='train/val batch size,default is 64')
     parser.add_argument('--seq_len',type=int,default=17,help='the sequence length effected by image width')
     parser.add_argument('--num_label',type=int,default=9,help='output label length,must less than seq_len')
@@ -173,7 +173,9 @@ if __name__ == '__main__':
     init_states = init_c + init_h
 
     data_train = OCRIter(BATCH_SIZE, classes, data_shape, num_label, init_states,opt.train_lst)
-    data_val = OCRIter(BATCH_SIZE, classes, data_shape, num_label, init_states,opt.val_lst)
+    data_val = None
+    if opt.val_lst is not None:
+        data_val = OCRIter(BATCH_SIZE, classes, data_shape, num_label, init_states,opt.val_lst)
 
     ctx = mx.gpu(0) if opt.gpu else mx.cpu(0)
     data_names = ['data', 'l0_init_c', 'l1_init_c', 'l2_init_c', 'l3_init_c', 'l0_init_h', 'l1_init_h', 'l2_init_h',
