@@ -6,12 +6,11 @@
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
-#include <opencv2/core/mat.hpp>
 //#include <tbb/parallel_for.h>
 #include <erfilter.hpp>
 
-//#define ANDROID
-#define LINUX
+#define ANDROID
+//#define LINUX
 
 #ifdef ANDROID
 #include <jni.h>
@@ -250,7 +249,7 @@ extern "C" {
 
 
     JNIEXPORT jint JNICALL
-    Java_com_lemoncome_staticcamera_util_TextDetector_init(JNIEnv *env, jobject instance,
+    Java_com_novio_staticcamera_util_TextDetector_init(JNIEnv *env, jobject instance,
                                                            jstring jsonFilePath_,
                                                            jstring parameterFilePath_,
                                                            jstring nmFilePath){
@@ -262,7 +261,7 @@ extern "C" {
     }
 
 
-    JNIEXPORT jstring JNICALL Java_com_lemoncome_staticcamera_util_TextDetector_predictor(JNIEnv *env, jobject instance,
+    JNIEXPORT jstring JNICALL Java_com_novio_staticcamera_util_TextDetector_predictor(JNIEnv *env, jobject instance,
                                                                                            jlong address) {
         const cv::Mat* tmp = (cv::Mat*)address;
         return env->NewStringUTF(m_predictor.predict(*tmp).c_str());
