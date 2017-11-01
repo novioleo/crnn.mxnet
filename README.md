@@ -20,4 +20,4 @@ If you can't run this project fluently,please refer me in ISSUES,i'll check it o
 
 The interface to use this model via mxnet of cpp is uploaded.And i'll update the handbook in some days.
 
-IF YOU WANT HAVE A COMFORTABLE COMMUNICATION IN CHINESE,YOU CAN JOIN THE QQ GROUP:129075101
+IF YOU WANT A COMFORTABLE COMMUNICATION IN CHINESE,YOU CAN JOIN THE QQ GROUP:129075101
