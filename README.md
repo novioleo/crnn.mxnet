@@ -19,3 +19,5 @@ I just implement [CRNN](https://github.com/bgshih/crnn) with mxnet and there are
 If you can't run this project fluently,please refer me in ISSUES,i'll check it out as soon as i can.
 
 The interface to use this model via mxnet of cpp is uploaded.And i'll update the handbook in some days.
+
+IF YOU WANT HAVE A COMFORTABLE COMMUNICATION IN CHINESE,YOU CAN JOIN THE QQ GROUP:129075101
