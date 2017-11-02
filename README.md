@@ -2,7 +2,9 @@
 crnn in mxnet.can train with chinese characters
 
 This project is the base module of the universal credentials' OCR with extra third party module.
-I'll add **ANDROID SUPPORT** in soon.
+~~I'll add **ANDROID SUPPORT** in soon.~~
+
+**ANDROID HAD BEEN SUPPORTED YET**
 
 REQUIREMENTS:
 - MxNET:0.11.0 or above,lower would occur some errors.
