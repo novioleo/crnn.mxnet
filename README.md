@@ -13,7 +13,7 @@ REQUIREMENTS:
 - Backgrounds:you can collect by yourself.
 
 
-HOW TO RUN
+## HOW TO RUN
 > python predictor.py
 
 
@@ -21,5 +21,19 @@ I just implement [CRNN](https://github.com/bgshih/crnn) with mxnet and there are
 If you can't run this project fluently,please refer me in ISSUES,i'll check it out as soon as i can.
 
 The interface to use this model via mxnet of cpp is uploaded.And i'll update the handbook in some days.
+
+## DOCKER
+There are some guys need a portable environment,so i create a docker file.
+you can predict via docker,only cpu version.If you need to train with gpu via docker,you'd need to modify the `config.mk`.
+rebuild docker image by yourself,and use it via nvidia-docker.
+
+```bash
+# build
+# docker build . -t novioleo/crnn-mxnet:0.11.0 
+docker run -it -rm -v /path/to/your/project:/run novioleo/crnn-mxnet:0.11.0 python
+```
+
+
+## Note
 
 IF YOU WANT A COMFORTABLE COMMUNICATION IN CHINESE,YOU CAN JOIN THE QQ GROUP:129075101
