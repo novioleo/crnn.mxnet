@@ -12,6 +12,23 @@ REQUIREMENTS:
 - Fonts:I collected some FREE Chinese fonts,you can download and uncompress [fonts.7z](https://pan.baidu.com/s/1gfiq53P) into `./generate_data/fonts/`
 - Backgrounds:you can collect by yourself.
 
+## HOW TO TRAIN
+I got some taobao captchas recently,there is the train script to train taobao captcha.
+```bash
+unzip captcha.zip ./
+# if you don't have NVIDIA-GPU in this machine,please remove the '--gpu' parameter
+# parameter interpretation:
+# name: the generated mode name,just the name.
+# charset: the characters in all dataset.
+# train_lst: the data URI and the label of data
+# batch_size: the number of data to compute the loss every time
+# seq_len: BiLSTM length(Advanced),relate with image width
+# num_label: the maximum length of label
+# imgH: image will resize to this height
+# imgW: image will resize to this width
+# learning_rate: lower for accurate,higher for speed.
+python train.py --name taobao_captcha --charset digit.txt --train_lst taobao_captcha.csv --batch_size 32 --seq_len 12 --num_label 6 --imgH 30 --imgW 100 --gpu --learning_rate 0.001
+```
 
 ## HOW TO RUN
 > python predictor.py
