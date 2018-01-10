@@ -53,6 +53,6 @@ docker run -it -rm -v /path/to/your/project:/run novioleo/crnn-mxnet:0.11.0 pyth
 
 ## Note
 
-![微信求打赏|@center](./wechat_pay.jpg)
+![微信求打赏](./wechat_pay.jpg)
 
 IF YOU WANT A COMFORTABLE COMMUNICATION IN CHINESE,YOU CAN JOIN THE QQ GROUP:129075101
