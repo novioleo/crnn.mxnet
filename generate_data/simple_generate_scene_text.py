@@ -46,7 +46,7 @@ def write_one(pic_height, to_print_text, fonts, pic_dir, shape, m_count):
             file_name = os.path.join(pic_dir, '%d_%s.jpg' % (m_count, fonts[i][:-4]))
             img.resize(shape, Image.BILINEAR).save(file_name)
             # to_write.write('%s\t%s\n' % (os.path.abspath(file_name), to_print_text))
-            to_return.append('%s\t%s\n' % (os.path.abspath(file_name), to_print_text))
+            to_return.append('%s,%s\n' % (os.path.abspath(file_name), to_print_text))
         except Exception as e:
             print(e)
     background.close()
