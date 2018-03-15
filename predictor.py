@@ -115,7 +115,7 @@ class predict():
         label_list = [['' for _ in range(self.seq_len)] for i in range(self.BATCH_SIZE)]
         for i in range(self.seq_len):
             for j in range(self.BATCH_SIZE):
-                max_index = np.argsort(prob[i * self.BATCH_SIZE + j])[::-1][0]
+                max_index = np.argmax(prob[i * self.BATCH_SIZE + j])
                 label_list[j][i] = max_index
         result = []
         for i in range(self.BATCH_SIZE):
